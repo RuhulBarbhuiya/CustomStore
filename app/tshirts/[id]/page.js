@@ -4,7 +4,7 @@ import Link from "next/link";
 
 export default async function ProductDetail({ params }) {
 
-  const { id } = await params;   // 👈 unwrap params
+  const { id } = await params;   
 
   const product = products.find(
     (item) => item.id == id
