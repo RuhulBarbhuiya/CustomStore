@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import styles from "../page.module.css";
 
 export default function Navbar() {
+  // Store logged-in user
   const [user, setUser] = useState(null);
 
   useEffect(() => {

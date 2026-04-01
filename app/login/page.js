@@ -10,7 +10,7 @@ export default function Login() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); // loading state for button
+  const [loading, setLoading] = useState(false); 
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -20,7 +20,7 @@ export default function Login() {
 
     try {
       setLoading(true);
-
+      // Sending login request to backend API
       const res = await fetch("/api/login", {
         method: "POST",
         headers: {
