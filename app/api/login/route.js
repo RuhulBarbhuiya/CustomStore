@@ -1,13 +1,11 @@
 import { connectDB } from "@/lib/mongodb"; 
 import User from "@/models/User"; 
-import bcrypt from "bcryptjs"; 
 
 // handles POST request
 export async function POST(req) {
   try {
-    //email and password from frontend
+    // email and password from frontend
     const { email, password } = await req.json();
-
 
     await connectDB();
 
@@ -20,9 +18,8 @@ export async function POST(req) {
       );
     }
 
-    const isMatch = await bcrypt.compare(password, user.password);
-
-    if (!isMatch) {
+    // ✅ simple comparison (plain text)
+    if (password !== user.password) {
       return Response.json(
         { error: "Invalid password" },
         { status: 400 }
@@ -38,7 +35,6 @@ export async function POST(req) {
     });
 
   } catch (err) {
-  
     return Response.json(
       { error: err.message },
       { status: 500 }

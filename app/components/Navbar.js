@@ -2,11 +2,18 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation"; // 👈 ADD THIS
 import styles from "../page.module.css";
 
 export default function Navbar() {
-  // Store logged-in user
   const [user, setUser] = useState(null);
+
+  const pathname = usePathname(); // 👈 get current route
+
+  // ❌ Hide navbar on admin pages
+  if (pathname.startsWith("/admin")) {
+    return null;
+  }
 
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
@@ -32,16 +39,15 @@ export default function Navbar() {
         <li>ABOUT US</li>
       </ul>
 
-      {}
-{user ? (
-  <Link href="/profile" className={styles.profileLink}>
-    👤 Profile
-  </Link>
-) : (
-  <Link href="/login">
-    <button className={styles.signIn}>Sign In</button>
-  </Link>
-)}
+      {user ? (
+        <Link href="/profile" className={styles.profileLink}>
+          👤 Profile
+        </Link>
+      ) : (
+        <Link href="/login">
+          <button className={styles.signIn}>Sign In</button>
+        </Link>
+      )}
     </nav>
   );
 }

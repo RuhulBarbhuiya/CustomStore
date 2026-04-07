@@ -1,50 +1,39 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import styles from "./login.module.css";
 
 export default function Login() {
-  const router = useRouter();
-
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false); 
 
   const handleLogin = async () => {
     if (!email || !password) {
-      alert("Please fill all fields"); 
+      alert("Please fill all fields");
       return;
     }
 
     try {
-      setLoading(true);
-      // Sending login request to backend API
       const res = await fetch("/api/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email, password }), 
+        body: JSON.stringify({ email, password }),
       });
 
       const data = await res.json();
-      console.log(data);
 
       if (res.ok) {
-        localStorage.setItem("user", JSON.stringify(data.user)); 
-
-        window.location.href = "/"; // refresh after log in
+        localStorage.setItem("user", JSON.stringify(data.user));
+        window.location.href = "/";
       } else {
         alert(data.error);
       }
 
     } catch (err) {
-      console.log(err);
-      alert("Something went wrong"); // error handling
-    } finally {
-      setLoading(false);
+      alert("Something went wrong");
     }
   };
 
@@ -72,7 +61,7 @@ export default function Login() {
         </div>
 
         <button onClick={handleLogin} className={styles.button}>
-          {loading ? "Signing in..." : "SIGN IN"}
+          SIGN IN
         </button>
 
         <p>

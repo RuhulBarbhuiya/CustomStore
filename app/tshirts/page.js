@@ -1,8 +1,19 @@
+"use client";
+
 import styles from "./tshirts.module.css";
 import Link from "next/link";
-import { products } from "../data/products";
+import { useEffect, useState } from "react";
 
 export default function Tshirts() {
+  const [products, setProducts] = useState([]);
+
+  // fetch products from backend
+  useEffect(() => {
+    fetch("/api/products") 
+      .then((res) => res.json())
+      .then((data) => setProducts(data));
+  }, []);
+
   return (
     <div>
 
@@ -17,8 +28,8 @@ export default function Tshirts() {
 
           {products.map((product) => (
             <Link
-              key={product.id}
-              href={`/tshirts/${product.id}`}   // ✅ FIXED HERE
+              key={product._id}
+              href={`/tshirts/${product._id}`} 
               className={styles.card}
             >
               <img src={product.image} alt={product.name} />
