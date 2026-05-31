@@ -11,6 +11,21 @@ import { getUserSnapshot, subscribeToUser } from "@/lib/user";
 import { saveOrder } from "@/lib/orders";
 import styles from "./checkout.module.css";
 
+function loadRazorpayScript() {
+  return new Promise((resolve) => {
+    if (window.Razorpay) {
+      resolve(true);
+      return;
+    }
+
+    const script = document.createElement("script");
+    script.src = "https://checkout.razorpay.com/v1/checkout.js";
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+}
+
 export default function CheckoutPage() {
   const cartSnapshot = useSyncExternalStore(
     subscribeToCart,
@@ -23,6 +38,8 @@ export default function CheckoutPage() {
     () => "null"
   );
   const [orderPlaced, setOrderPlaced] = useState(false);
+  const [paymentMessage, setPaymentMessage] = useState("");
+  const [isPaying, setIsPaying] = useState(false);
 
   const cartItems = useMemo(() => {
     try {
@@ -45,27 +62,114 @@ export default function CheckoutPage() {
     }
   }, [userSnapshot]);
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
+    setPaymentMessage("");
 
     if (cartItems.length === 0 || !user) return;
 
     const formData = new FormData(event.currentTarget);
+    const customer = {
+      name: formData.get("name"),
+      email: formData.get("email"),
+      phone: formData.get("phone"),
+      address: formData.get("address"),
+      city: formData.get("city"),
+      pincode: formData.get("pincode"),
+    };
 
-    saveOrder({
-      items: cartItems,
-      total: totalPrice,
-      customer: {
-        name: formData.get("name"),
-        email: formData.get("email"),
-        phone: formData.get("phone"),
-        address: formData.get("address"),
-        city: formData.get("city"),
-        pincode: formData.get("pincode"),
-      },
-    });
-    clearCart();
-    setOrderPlaced(true);
+    setIsPaying(true);
+
+    try {
+      const scriptLoaded = await loadRazorpayScript();
+
+      if (!scriptLoaded) {
+        setPaymentMessage("Unable to load payment gateway. Please try again.");
+        return;
+      }
+
+      const orderResponse = await fetch("/api/payment/create-order", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ amount: totalPrice }),
+      });
+
+      const orderData = await orderResponse.json();
+
+      if (!orderResponse.ok) {
+        setPaymentMessage(orderData.error || "Unable to start payment.");
+        return;
+      }
+
+      const paymentResult = await new Promise((resolve) => {
+        const razorpay = new window.Razorpay({
+          key: orderData.keyId,
+          amount: orderData.amount,
+          currency: orderData.currency,
+          name: "Custom Store",
+          description: "Order payment",
+          order_id: orderData.orderId,
+          prefill: {
+            name: customer.name,
+            email: customer.email,
+            contact: customer.phone,
+          },
+          notes: {
+            address: `${customer.address}, ${customer.city}, ${customer.pincode}`,
+          },
+          theme: {
+            color: "#16a34a",
+          },
+          handler: resolve,
+          modal: {
+            ondismiss: () => resolve(null),
+          },
+        });
+
+        razorpay.open();
+      });
+
+      if (!paymentResult) {
+        setPaymentMessage("Payment was cancelled.");
+        return;
+      }
+
+      const verifyResponse = await fetch("/api/payment/verify", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(paymentResult),
+      });
+
+      const verifyData = await verifyResponse.json();
+
+      if (!verifyResponse.ok || !verifyData.verified) {
+        setPaymentMessage(verifyData.error || "Payment verification failed.");
+        return;
+      }
+
+      saveOrder({
+        items: cartItems,
+        total: totalPrice,
+        customer,
+        payment: {
+          provider: "Razorpay",
+          status: "Paid",
+          orderId: paymentResult.razorpay_order_id,
+          paymentId: paymentResult.razorpay_payment_id,
+        },
+      });
+
+      clearCart();
+      setOrderPlaced(true);
+    } catch (err) {
+      setPaymentMessage("Something went wrong while processing payment.");
+    } finally {
+      setIsPaying(false);
+    }
   };
 
   return (
@@ -103,7 +207,15 @@ export default function CheckoutPage() {
             <input name="city" type="text" placeholder="City" required />
             <input name="pincode" type="text" placeholder="Pincode" required />
 
-            <button type="submit">Place Order</button>
+            {paymentMessage && (
+              <p className={styles.paymentMessage} role="alert">
+                {paymentMessage}
+              </p>
+            )}
+
+            <button type="submit" disabled={isPaying}>
+              {isPaying ? "Opening Payment..." : "Pay with Razorpay"}
+            </button>
           </form>
 
           <div className={styles.summary}>
