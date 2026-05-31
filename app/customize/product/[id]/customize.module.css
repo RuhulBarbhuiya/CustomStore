@@ -1,0 +1,396 @@
+.container {
+  padding: 30px 60px;
+}
+
+/* ---------- BANNER ---------- */
+.banner {
+  background: #b79a9a;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.banner h2 {
+  margin-bottom: 5px;
+}
+
+/* ---------- LAYOUT ---------- */
+.wrapper {
+  display: flex;
+  gap: 40px;
+}
+
+/* ---------- LEFT ---------- */
+.left {
+  width: 40%;
+}
+
+.sideTabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.sideTabs button {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+}
+
+.sideTabs .activeSide {
+  border-color: #111827;
+  background: #111827;
+  color: white;
+}
+
+.imageBox {
+  background: white;
+  padding: 30px;
+  border-radius: 20px;
+  text-align: center;
+}
+
+.imageBox img {
+  width: 220px;
+}
+
+.productName {
+  margin-top: 15px;
+}
+
+/* SIZE */
+.size {
+  margin: 15px 0;
+}
+
+.size span {
+  margin-right: 10px;
+}
+
+.size button {
+  margin-right: 8px;
+  padding: 5px 10px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
+}
+
+.size button:hover {
+  background: #eee;
+}
+
+.size .selectedSize {
+  background: #111827;
+  border-color: #111827;
+  color: #ffffff;
+}
+
+.quantity {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 15px 0;
+}
+
+.quantity input {
+  width: 80px;
+  padding: 6px 8px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+}
+
+.purchaseActions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+/* BUTTON */
+.cartBtn,
+.checkoutBtn {
+  margin-top: 15px;
+  padding: 10px;
+  width: 100%;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+.cartBtn {
+  background: green;
+}
+
+.checkoutBtn {
+  background: #111827;
+}
+
+.cartMessage {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  border-radius: 10px;
+  color: #166534;
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 12px 0 0;
+  padding: 12px 14px;
+  text-align: center;
+}
+
+
+/* ---------- RIGHT ---------- */
+.right {
+  width: 60%;
+}
+
+/* COLORS */
+.colors {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.color {
+  width: 40px;
+  height: 40px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.color:hover {
+  transform: translateY(-1px);
+}
+
+.selectedColor {
+  border-color: #111827;
+  outline: 2px solid #111827;
+  outline-offset: 2px;
+}
+
+/* TEXT */
+.textBox {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.textBox input {
+  flex: 1;
+  padding: 10px;
+}
+
+.textBox button {
+  background: #16a34a;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+.textColors {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: -5px 0 20px;
+}
+
+.textColor {
+  width: 34px;
+  height: 34px;
+  border: 2px solid #d1d5db;
+  border-radius: 8px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.selectedTextColor {
+  border-color: #111827;
+  outline: 2px solid #111827;
+  outline-offset: 2px;
+}
+
+/* UPLOAD */
+.uploadDropzone {
+  display: flex;
+  min-height: 150px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 22px;
+  border: 2px dashed #9ca3af;
+  border-radius: 8px;
+  background: #f8fafc;
+  color: #111827;
+  cursor: pointer;
+  text-align: center;
+  transition: border-color 0.15s ease, background 0.15s ease, transform 0.15s ease;
+}
+
+.uploadDropzone:hover,
+.uploadDropzone:focus-visible,
+.uploadDropzoneActive {
+  border-color: #111827;
+  background: #eef2ff;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.uploadInput {
+  display: none;
+}
+
+.uploadIcon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 50%;
+  background: #111827;
+  color: white;
+  font-size: 28px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.uploadDropzone strong {
+  font-size: 1rem;
+}
+
+.uploadDropzone span:last-child {
+  color: #4b5563;
+  font-size: 0.9rem;
+}
+
+.uploadMessage {
+  margin: -2px 0 16px;
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.uploadSuccess {
+  color: #166534;
+}
+
+.uploadError {
+  color: #b00020;
+}
+
+.deleteBtn {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid #dc2626;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #dc2626;
+  font-weight: 700;
+  cursor: pointer;
+  margin-bottom: 20px;
+}
+
+.assetTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.assetTabs button {
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+  color: #111827;
+  cursor: pointer;
+  font-weight: 600;
+  padding: 7px 10px;
+}
+
+.assetTabs .activeAssetTab {
+  border-color: #111827;
+  background: #111827;
+  color: white;
+}
+
+.assetGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.assetCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 7px;
+  min-height: 116px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: white;
+  color: #111827;
+  cursor: pointer;
+  padding: 8px;
+  text-align: center;
+}
+
+.assetCard:hover {
+  border-color: #111827;
+}
+
+.assetCard img {
+  width: 100%;
+  height: 70px;
+  object-fit: contain;
+  background: #f8fafc;
+  border-radius: 6px;
+}
+
+.assetCard span {
+  display: -webkit-box;
+  max-width: 100%;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  font-size: 0.78rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+
+/* ---------- DESCRIPTION ---------- */
+.description {
+  margin-top: 40px;
+}
+
+.description h3 {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 900px) {
+  .container {
+    padding: 24px;
+  }
+
+  .wrapper {
+    flex-direction: column;
+  }
+
+  .left,
+  .right {
+    width: 100%;
+  }
+}
+
+@media (max-width: 520px) {
+  .assetGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

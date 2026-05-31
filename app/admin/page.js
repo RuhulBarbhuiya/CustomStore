@@ -1,236 +1,321 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import styles from "./admin.module.css";
+
+const initialProductState = {
+  name: "",
+  price: "",
+  category: "tshirt",
+  image: "",
+  backImage: "",
+  description: "",
+};
 
 export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("users");
   const [users, setUsers] = useState([]);
+  const [products, setProducts] = useState([]);
+  const [editingId, setEditingId] = useState(null);
 
-  const [product, setProduct] = useState({
-    name: "",
-    price: "",
-    category: "tshirt",
-    image: "",
-    description: "",
-  });
+  const [product, setProduct] = useState(initialProductState);
 
-  const fetchUsers = async () => {
-    const res = await fetch("/api/users");
-    const data = await res.json();
-    setUsers(data);
+  // Fetch Users
+  useEffect(() => {
+    if (activeTab !== "users") return;
+    let ignore = false;
+    fetch("/api/users")
+      .then((res) => res.json())
+      .then((data) => {
+        if (!ignore && Array.isArray(data)) setUsers(data);
+      })
+      .catch((err) => console.error(err));
+    return () => { ignore = true; };
+  }, [activeTab]);
+
+  // Fetch Products
+  const fetchProducts = () => {
+    fetch("/api/products?includeLocal=true")
+      .then((res) => res.json())
+      .then((data) => {
+        if (Array.isArray(data)) setProducts(data);
+      })
+      .catch((err) => console.error(err));
   };
 
   useEffect(() => {
-    if (activeTab === "users") {
-      fetchUsers();
+    if (activeTab === "products") {
+      fetchProducts();
     }
   }, [activeTab]);
 
   const handleChange = (e) => {
-    setProduct({ ...product, [e.target.name]: e.target.value });
+    const value = e.target.type === "checkbox" ? e.target.checked : e.target.value;
+    setProduct({ ...product, [e.target.name]: value });
   };
 
-  const addProduct = async () => {
-    if (
-      !product.name ||
-      !product.price ||
-      !product.image ||
-      !product.description
-    ) {
-      alert("Please fill all fields");
+  const saveProduct = async () => {
+    if (!product.name || !product.price || !product.image || !product.description) {
+      alert("Please fill all required fields");
       return;
     }
 
+    const payload = {
+      ...product,
+      price: Number(product.price),
+      isCustomizable: false,
+      colorOptions: [],
+    };
+
     try {
-      const res = await fetch("/api/products", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...product,
-          price: Number(product.price),
-        }),
+      const url = editingId ? `/api/products/${editingId}` : "/api/products";
+      const method = editingId ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
       });
 
       if (!res.ok) {
-        alert("Failed to add product");
+        alert("Failed to save product");
         return;
       }
 
-      alert("Product added!");
-
-      setProduct({
-        name: "",
-        price: "",
-        category: "tshirt",
-        image: "",
-        description: "",
-      });
+      alert(`Product ${editingId ? "updated" : "added"} successfully!`);
+      
+      // Reset form
+      setProduct(initialProductState);
+      setEditingId(null);
+      
+      if (editingId) {
+        setActiveTab("products"); // Switch back to products view after editing
+      }
     } catch (err) {
       alert("Something went wrong");
     }
   };
 
+  const handleEdit = (prod) => {
+    setProduct({
+      name: prod.name,
+      price: prod.price,
+      category: prod.category || "tshirt",
+      image: prod.image,
+      backImage: prod.backImage || "",
+      description: prod.description || "",
+    });
+    setEditingId(prod._id || prod.id);
+    setActiveTab("addProduct"); // Act as Edit Product
+  };
+
+  const handleDelete = async (id) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      const res = await fetch(`/api/products/${id}`, { method: "DELETE" });
+      if (res.ok) {
+        fetchProducts();
+      } else {
+        alert("Failed to delete product.");
+      }
+    } catch (e) {
+      alert("Something went wrong.");
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setProduct(initialProductState);
+    setEditingId(null);
+    setActiveTab("products");
+  };
+
   return (
-    <div style={styles.container}>
+    <div className={styles.container}>
       {/* SIDEBAR */}
-      <div style={styles.sidebar}>
-        <h2>Admin</h2>
+      <div className={styles.sidebar}>
+        <h2 className={styles.sidebarHeader}>Admin Panel</h2>
 
         <button
-          onClick={() => setActiveTab("users")}
-          style={styles.menuBtn}
+          onClick={() => { setActiveTab("users"); setEditingId(null); }}
+          className={`${styles.menuBtn} ${activeTab === "users" ? styles.menuBtnActive : ""}`}
         >
           Users
         </button>
 
         <button
-          onClick={() => setActiveTab("addProduct")}
-          style={styles.menuBtn}
+          onClick={() => { setActiveTab("products"); setEditingId(null); }}
+          className={`${styles.menuBtn} ${activeTab === "products" ? styles.menuBtnActive : ""}`}
+        >
+          Manage Products
+        </button>
+
+        <button
+          onClick={() => { 
+            setActiveTab("addProduct"); 
+            setEditingId(null); 
+            setProduct(initialProductState); 
+          }}
+          className={`${styles.menuBtn} ${activeTab === "addProduct" && !editingId ? styles.menuBtnActive : ""}`}
         >
           Add Product
         </button>
+
       </div>
 
       {/* MAIN */}
-      <div style={styles.main}>
-        <h1>Admin Dashboard</h1>
+      <div className={styles.main}>
+        <h1 className={styles.mainHeader}>Dashboard</h1>
 
         {activeTab === "users" && (
           <div>
-            <h2>Registered Users</h2>
+            <h2 className={styles.tabTitle}>Registered Users</h2>
 
             {users.length === 0 ? (
               <p>No users found</p>
             ) : (
               users.map((u) => (
-                <div key={u._id} style={styles.card}>
-                  <p>
-                    <b>{u.name}</b>
-                  </p>
-                  <p>{u.email}</p>
+                 <div key={u._id || u.email} className={styles.card}>
+                  <p className={styles.cardName}>{u.name}</p>
+                  <p className={styles.cardEmail}>{u.email}</p>
                 </div>
               ))
             )}
           </div>
         )}
 
+        {activeTab === "products" && (
+          <div>
+            <h2 className={styles.tabTitle}>Manage Products</h2>
+            
+            {products.length === 0 ? (
+              <p>No products found.</p>
+            ) : (
+              <div className={styles.tableContainer}>
+                <table className={styles.productTable}>
+                  <thead>
+                    <tr>
+                      <th>Image</th>
+                      <th>Name</th>
+                      <th>Category</th>
+                      <th>Price</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {products.map((p) => (
+                      <tr key={p._id || p.id}>
+                        <td>
+                          <img src={p.image} alt={p.name} className={styles.tableImg} />
+                        </td>
+                        <td style={{ fontWeight: 600 }}>{p.name}</td>
+                        <td>{p.category}</td>
+                        <td>Rs {p.price}</td>
+                        <td className={styles.actionCell}>
+                          {p.source === "catalog" ? (
+                            <span className={styles.readonlyBadge}>Read only</span>
+                          ) : (
+                            <>
+                              <button onClick={() => handleEdit(p)} className={`${styles.iconBtn} ${styles.editBtn}`}>Edit</button>
+                              <button onClick={() => handleDelete(p._id || p.id)} className={`${styles.iconBtn} ${styles.deleteBtn}`}>Delete</button>
+                            </>
+                          )}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+
         {activeTab === "addProduct" && (
           <div>
-            <h2>Add Product</h2>
+            <h2 className={styles.tabTitle}>{editingId ? "Edit Product" : "Add New Product"}</h2>
 
-            <input
-              name="name"
-              placeholder="Product Name"
-              value={product.name}
-              onChange={handleChange}
-              style={styles.input}
-            />
+            <div className={styles.formContainer}>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Product Name</label>
+                <input
+                  name="name"
+                  value={product.name}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </div>
 
-            <input
-              name="price"
-              placeholder="Price"
-              value={product.price}
-              onChange={handleChange}
-              style={styles.input}
-            />
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Price (Rs)</label>
+                <input
+                  name="price"
+                  type="number"
+                  value={product.price}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </div>
 
-            <select
-              name="category"
-              value={product.category}
-              onChange={handleChange}
-              style={styles.input}
-            >
-              <option value="tshirt">T-Shirt</option>
-              <option value="mug">Mug</option>
-              <option value="hoodie">Hoodie</option>
-            </select>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Category</label>
+                <select
+                  name="category"
+                  value={product.category}
+                  onChange={handleChange}
+                  className={styles.input}
+                >
+                  <option value="tshirt">T-Shirt</option>
+                  <option value="mug">Mug</option>
+                  <option value="hoodie">Hoodie</option>
+                  <option value="full-sleeve">Full Sleeve</option>
+                  <option value="cap">Cap</option>
+                </select>
+              </div>
 
-            <input
-              name="image"
-              placeholder="Image URL"
-              value={product.image}
-              onChange={handleChange}
-              style={styles.input}
-            />
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Image URL</label>
+                <input
+                  name="image"
+                  value={product.image}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </div>
 
-            <textarea
-              name="description"
-              placeholder="Product Description"
-              value={product.description}
-              onChange={handleChange}
-              style={{ ...styles.input, height: "100px" }}
-            />
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Back Image URL</label>
+                <input
+                  name="backImage"
+                  value={product.backImage}
+                  onChange={handleChange}
+                  className={styles.input}
+                />
+              </div>
 
-            <button onClick={addProduct} style={styles.addBtn}>
-              Add Product
-            </button>
+              <div className={styles.inputGroup}>
+                <label className={styles.label}>Description</label>
+                <textarea
+                  name="description"
+                  value={product.description}
+                  onChange={handleChange}
+                  className={`${styles.input} ${styles.textarea}`}
+                />
+              </div>
+
+              <div className={styles.formActions}>
+                <button onClick={saveProduct} className={styles.saveBtn}>
+                  {editingId ? "Save Changes" : "Create Product"}
+                </button>
+                {editingId && (
+                  <button onClick={handleCancelEdit} className={styles.cancelBtn}>
+                    Cancel
+                  </button>
+                )}
+              </div>
+            </div>
           </div>
         )}
       </div>
     </div>
   );
 }
-
-// STYLES
-const styles = {
-  container: {
-    display: "flex",
-    minHeight: "100vh",
-  },
-
-  sidebar: {
-    width: "200px",
-    background: "#222",
-    color: "white",
-    padding: "15px",
-  },
-
-  menuBtn: {
-    display: "block",
-    width: "100%",
-    marginBottom: "8px",
-    padding: "8px",
-    background: "#444",
-    color: "white",
-    border: "none",
-    outline: "none",              
-    boxShadow: "none",            
-    WebkitTapHighlightColor: "transparent",
-    cursor: "default",
-  },
-
-  main: {
-    flex: 1,
-    padding: "20px",
-    background: "#f0f0f0",
-  },
-
-  card: {
-    background: "white",
-    padding: "10px",
-    marginBottom: "10px",
-    border: "1px solid #ddd",
-  },
-
-  input: {
-    display: "block",
-    marginBottom: "10px",
-    padding: "8px",
-    width: "250px",
-    border: "1px solid #ccc",
-    outline: "none",
-  },
-
-  addBtn: {
-    padding: "8px 15px",
-    background: "#333",
-    color: "white",
-    border: "none",
-    outline: "none",
-    boxShadow: "none",
-    WebkitTapHighlightColor: "transparent",
-    cursor: "default",
-  },
-};

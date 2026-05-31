@@ -1,10 +1,10 @@
-import { connectDB } from "@/lib/mongodb"; 
-import User from "@/models/User"; 
+import { connectDB } from "@/lib/mongodb";
+import User from "@/models/User";
 
-// handles POST request
+const invalidCredentialMessage = "Invalid email or password";
+
 export async function POST(req) {
   try {
-    // email and password from frontend
     const { email, password } = await req.json();
 
     await connectDB();
@@ -12,18 +12,18 @@ export async function POST(req) {
     const user = await User.findOne({ email });
 
     if (!user) {
+      return Response.json({ error: invalidCredentialMessage }, { status: 400 });
+    }
+
+    if (user.isEmailVerified === false) {
       return Response.json(
-        { error: "User not found" },
-        { status: 400 }
+        { error: "Please verify your email before logging in" },
+        { status: 403 }
       );
     }
 
-    // ✅ simple comparison (plain text)
     if (password !== user.password) {
-      return Response.json(
-        { error: "Invalid password" },
-        { status: 400 }
-      );
+      return Response.json({ error: invalidCredentialMessage }, { status: 400 });
     }
 
     return Response.json({
@@ -33,11 +33,7 @@ export async function POST(req) {
         email: user.email,
       },
     });
-
   } catch (err) {
-    return Response.json(
-      { error: err.message },
-      { status: 500 }
-    );
+    return Response.json({ error: err.message }, { status: 500 });
   }
 }

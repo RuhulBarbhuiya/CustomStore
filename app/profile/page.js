@@ -1,67 +1,91 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useEffect, useMemo, useSyncExternalStore } from "react";
 import { useRouter } from "next/navigation";
+import { clearUser, getUserSnapshot, subscribeToUser } from "@/lib/user";
 import styles from "./profile.module.css";
 
 export default function Profile() {
-  const [user, setUser] = useState(null);
   const router = useRouter();
+  const userSnapshot = useSyncExternalStore(
+    subscribeToUser,
+    getUserSnapshot,
+    () => "null"
+  );
+
+  const user = useMemo(() => {
+    try {
+      return JSON.parse(userSnapshot);
+    } catch {
+      return null;
+    }
+  }, [userSnapshot]);
 
   useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-
-    if (!storedUser) {
+    if (!user) {
       router.push("/login");
-    } else {
-      setUser(JSON.parse(storedUser));
     }
-  }, []);
+  }, [router, user]);
 
-  if (!user) return <p>Loading...</p>;
+  if (!user) return <p className={styles.loading}>Loading...</p>;
+
+  const handleLogout = () => {
+    clearUser();
+    router.push("/");
+  };
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>Profile</h1>
-
-      {/* TOP CARD */}
-      <div className={styles.card}>
-        <div className={styles.profileTop}>
+    <main className={styles.container}>
+      <section className={styles.hero}>
+        <div className={styles.heroTop}>
           <div className={styles.avatar}>
-            {user.name.charAt(0).toUpperCase()}
+            <img src="/assets/profile.png" alt={`${user.name} profile`} />
           </div>
-
-      
-        </div>
-      </div>
-
-      {/* DETAILS CARD */}
-      <div className={styles.card}>
-        <h3>Account Details</h3>
-
-        <div className={styles.grid}>
-          <div>
-            <p className={styles.label}>Full Name</p>
-            <p>{user.name}</p>
-          </div>
-
-          <div>
-            <p className={styles.label}>Email</p>
+          <div className={styles.identity}>
+            <p className={styles.eyebrow}>My Profile</p>
+            <h1>{user.name}</h1>
             <p>{user.email}</p>
           </div>
-
         </div>
 
-        <button
-          className={styles.logout}
-          onClick={() => {
-            localStorage.removeItem("user");
-            router.push("/");
-          }}
-        >
-          Logout
-        </button>
-      </div>
-    </div>
+        <div className={styles.heroBottom}>
+          <span className={styles.statusBadge}>Signed in</span>
+          <button type="button" onClick={handleLogout} className={styles.logoutBtn}>
+            Logout
+          </button>
+        </div>
+      </section>
+
+      <section className={styles.actions}>
+        <Link href="/cart" className={styles.actionLink}>
+          <div>
+            <span>My Cart</span>
+            <small>View products you added</small>
+          </div>
+          <strong>Open</strong>
+        </Link>
+      </section>
+
+      <section className={styles.panel}>
+        <div className={styles.panelHeader}>
+          <p className={styles.eyebrow}>Account</p>
+          <h2>Account Details</h2>
+        </div>
+
+        <div className={styles.detailRow}>
+          <span>Name</span>
+          <strong>{user.name}</strong>
+        </div>
+        <div className={styles.detailRow}>
+          <span>Email</span>
+          <strong>{user.email}</strong>
+        </div>
+        <div className={styles.detailRow}>
+          <span>Account Status</span>
+          <strong>Active</strong>
+        </div>
+      </section>
+    </main>
   );
 }

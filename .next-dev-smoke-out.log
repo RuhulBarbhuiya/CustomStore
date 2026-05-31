@@ -1,0 +1,29 @@
+
+> my-auth-project@0.1.0 dev
+> next dev -p 3052
+
+   ▲ Next.js 15.5.14
+   - Local:        http://localhost:3052
+   - Network:      http://192.168.1.15:3052
+   - Environments: .env.local
+
+ ✓ Starting...
+ ✓ Ready in 2.3s
+ ○ Compiling / ...
+ ✓ Compiled / in 4.1s (646 modules)
+ GET / 200 in 4865ms
+ ○ Compiling /admin ...
+ ✓ Compiled /admin in 1315ms (647 modules)
+ GET /admin 200 in 1568ms
+ ✓ Compiled in 376ms (234 modules)
+ ✓ Compiled in 91ms (244 modules)
+ ✓ Compiled in 144ms (244 modules)
+ ✓ Compiled in 140ms (244 modules)
+ ✓ Compiled in 230ms (234 modules)
+ ✓ Compiled in 81ms (234 modules)
+ ✓ Compiled in 45ms (234 modules)
+ ✓ Compiled in 53ms (234 modules)
+ ✓ Compiled in 52ms (234 modules)
+ ✓ Compiled in 53ms (234 modules)
+ ✓ Compiled in 43ms (234 modules)
+ ✓ Compiled in 652ms (234 modules)

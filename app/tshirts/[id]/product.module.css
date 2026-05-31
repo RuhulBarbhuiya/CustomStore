@@ -38,6 +38,11 @@
   background:#ddd;
 }
 
+.size .selectedSize{
+  background:#111827;
+  color:white;
+}
+
 .buttons{
   margin:30px 0;
   display:flex;

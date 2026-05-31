@@ -23,6 +23,27 @@
   background:#eee;
 }
 
+.message{
+  width:100%;
+  margin:0 0 15px;
+  padding:12px 14px;
+  border-radius:10px;
+  font-size:14px;
+  text-align:left;
+}
+
+.error{
+  background:#ffe8e8;
+  color:#b00020;
+  border:1px solid #ffc8c8;
+}
+
+.success{
+  background:#e8f7ee;
+  color:#126b35;
+  border:1px solid #bfe8cd;
+}
+
 .button{
   width:100%;
   padding:15px;
@@ -31,4 +52,9 @@
   border:none;
   border-radius:10px;
   font-size:18px;
+}
+
+.button:disabled{
+  cursor:not-allowed;
+  opacity:0.7;
 }
