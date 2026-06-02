@@ -198,6 +198,31 @@
   gap: 20px;
 }
 
+.notice {
+  margin: 0 0 18px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.formContainer .notice {
+  margin-bottom: 0;
+}
+
+.success {
+  color: #166534;
+  background: #dcfce7;
+  border: 1px solid #86efac;
+}
+
+.error {
+  color: #991b1b;
+  background: #fee2e2;
+  border: 1px solid #fecaca;
+}
+
 .inputGroup {
   display: flex;
   flex-direction: column;
@@ -326,6 +351,11 @@
 
 .saveBtn:hover {
   background: #1d4ed8;
+}
+
+.saveBtn:disabled {
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .cancelBtn {

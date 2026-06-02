@@ -17,6 +17,8 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [products, setProducts] = useState([]);
   const [editingId, setEditingId] = useState(null);
+  const [productNotice, setProductNotice] = useState(null);
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
 
   const [product, setProduct] = useState(initialProductState);
 
@@ -56,9 +58,15 @@ export default function AdminPage() {
 
   const saveProduct = async () => {
     if (!product.name || !product.price || !product.image || !product.description) {
-      alert("Please fill all required fields");
+      setProductNotice({
+        type: "error",
+        text: "Please fill all required fields.",
+      });
       return;
     }
+
+    setIsSavingProduct(true);
+    setProductNotice(null);
 
     const payload = {
       ...product,
@@ -78,25 +86,39 @@ export default function AdminPage() {
       });
 
       if (!res.ok) {
-        alert("Failed to save product");
+        setProductNotice({
+          type: "error",
+          text: "Failed to save product. Please try again.",
+        });
         return;
       }
 
-      alert(`Product ${editingId ? "updated" : "added"} successfully!`);
+      const wasEditing = Boolean(editingId);
+      setProductNotice({
+        type: "success",
+        text: `Product ${wasEditing ? "updated" : "added"} successfully.`,
+      });
       
       // Reset form
       setProduct(initialProductState);
       setEditingId(null);
+      fetchProducts();
       
-      if (editingId) {
+      if (wasEditing) {
         setActiveTab("products"); // Switch back to products view after editing
       }
     } catch (err) {
-      alert("Something went wrong");
+      setProductNotice({
+        type: "error",
+        text: "Something went wrong. Please try again.",
+      });
+    } finally {
+      setIsSavingProduct(false);
     }
   };
 
   const handleEdit = (prod) => {
+    setProductNotice(null);
     setProduct({
       name: prod.name,
       price: prod.price,
@@ -127,6 +149,7 @@ export default function AdminPage() {
   const handleCancelEdit = () => {
     setProduct(initialProductState);
     setEditingId(null);
+    setProductNotice(null);
     setActiveTab("products");
   };
 
@@ -144,7 +167,7 @@ export default function AdminPage() {
         </button>
 
         <button
-          onClick={() => { setActiveTab("products"); setEditingId(null); }}
+          onClick={() => { setActiveTab("products"); setEditingId(null); setProductNotice(null); }}
           className={`${styles.menuBtn} ${activeTab === "products" ? styles.menuBtnActive : ""}`}
         >
           Manage Products
@@ -155,6 +178,7 @@ export default function AdminPage() {
             setActiveTab("addProduct"); 
             setEditingId(null); 
             setProduct(initialProductState); 
+            setProductNotice(null);
           }}
           className={`${styles.menuBtn} ${activeTab === "addProduct" && !editingId ? styles.menuBtnActive : ""}`}
         >
@@ -187,6 +211,12 @@ export default function AdminPage() {
         {activeTab === "products" && (
           <div>
             <h2 className={styles.tabTitle}>Manage Products</h2>
+
+            {productNotice && (
+              <p className={`${styles.notice} ${styles[productNotice.type]}`}>
+                {productNotice.text}
+              </p>
+            )}
             
             {products.length === 0 ? (
               <p>No products found.</p>
@@ -235,6 +265,12 @@ export default function AdminPage() {
             <h2 className={styles.tabTitle}>{editingId ? "Edit Product" : "Add New Product"}</h2>
 
             <div className={styles.formContainer}>
+              {productNotice && (
+                <p className={`${styles.notice} ${styles[productNotice.type]}`}>
+                  {productNotice.text}
+                </p>
+              )}
+
               <div className={styles.inputGroup}>
                 <label className={styles.label}>Product Name</label>
                 <input
@@ -303,8 +339,8 @@ export default function AdminPage() {
               </div>
 
               <div className={styles.formActions}>
-                <button onClick={saveProduct} className={styles.saveBtn}>
-                  {editingId ? "Save Changes" : "Create Product"}
+                <button onClick={saveProduct} className={styles.saveBtn} disabled={isSavingProduct}>
+                  {isSavingProduct ? "Saving..." : editingId ? "Save Changes" : "Create Product"}
                 </button>
                 {editingId && (
                   <button onClick={handleCancelEdit} className={styles.cancelBtn}>
